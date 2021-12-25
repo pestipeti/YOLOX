@@ -58,5 +58,5 @@ class Exp(MyExp):
 
         # -----------------  testing config ------------------ #
         self.test_size = (800, 1280)
-        self.test_conf = 0.4
-        self.nmsthre = 0.4
+        self.test_conf = 0.01
+        self.nmsthre = 0.65

@@ -2,6 +2,7 @@
 *~
 
 # user experiments directory
+wandb/
 YOLOX_outputs/
 datasets/
 # do not ignore datasets under yolox/data

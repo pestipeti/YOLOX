@@ -153,13 +153,12 @@ class WandBLogger:
         scores = output[:, 4] * output[:, 5]
 
         # load input image
-        if isinstance(image, Union[str, Path]):
+        if isinstance(image, str) or isinstance(image, Path):
             image = cv2.imread(image)
             if image is None:
                 raise ValueError("test image path is invalid!")
         elif isinstance(image, np.ndarray):
             image = image
-
 
         all_boxes = []
 
