@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 # Copyright (c) Megvii, Inc. and its affiliates.
-
+import cv2
+import numpy as np
 from loguru import logger
 
 import torch
@@ -40,6 +41,9 @@ class Trainer:
         self.args = args
 
         # training related attr
+        self.iter = 0
+        self.epoch = 0
+        self.start_epoch = 0
         self.max_epoch = exp.max_epoch
         self.amp_training = args.fp16
         self.scaler = torch.cuda.amp.GradScaler(enabled=args.fp16)
@@ -53,6 +57,7 @@ class Trainer:
         self.data_type = torch.float16 if args.fp16 else torch.float32
         self.input_size = exp.input_size
         self.best_ap = 0
+        self.tmp_inputs = None
 
         # metric record
         self.meter = MeterBuffer(window_size=exp.print_interval)
@@ -99,6 +104,9 @@ class Trainer:
         inps, targets = self.exp.preprocess(inps, targets, self.input_size)
         data_end_time = time.time()
 
+        if self.iter == 0:
+            self.tmp_inputs = inps.detach().cpu().numpy()
+
         with torch.cuda.amp.autocast(enabled=self.amp_training):
             outputs = self.model(inps, targets)
 
@@ -119,7 +127,7 @@ class Trainer:
         if self.rank == 0 and self.args.wandb:
             self.wandb_logger.log_metrics("LR", lr)
             self.wandb_logger.log_metrics("Train/loss", loss.item())
-            self.wandb_logger.wandb.config.update({"LR": lr}, allow_val_change = True)
+            self.wandb_logger.wandb.config.update({"LR": lr}, allow_val_change=True)
 
         iter_end_time = time.time()
         self.meter.update(
@@ -234,6 +242,15 @@ class Trainer:
             * log information
             * reset setting of resize
         """
+        if self.iter <= 1:
+            # log input images
+            for idx, img in enumerate(self.tmp_inputs):
+                img = img.transpose(1, 2, 0)
+                img = img.astype(np.uint8)
+                cv2.imwrite(os.path.join(self.file_name, f"train_{self.iter}_{idx}.jpg"), img)
+
+            self.tmp_inputs = None
+
         # log needed information
         if (self.iter + 1) % self.exp.print_interval == 0:
             # TODO check ETA logic
@@ -339,7 +356,7 @@ class Trainer:
         self.save_ckpt("last_epoch", ap50_95 > self.best_ap)
         self.best_ap = max(self.best_ap, ap50_95)
         if self.rank == 0 and self.args.wandb:
-            self.wandb_logger.wandb.config.update({"Best_AP": self.best_ap}, allow_val_change = True)
+            self.wandb_logger.wandb.config.update({"Best_AP": self.best_ap}, allow_val_change=True)
 
     def save_ckpt(self, ckpt_name, update_best_ckpt=False):
         if self.rank == 0:
