@@ -354,8 +354,8 @@ class Trainer:
             self.tblogger.add_scalar("val/COCOAP50", ap50, self.epoch + 1)
             self.tblogger.add_scalar("val/COCOAP50_95", ap50_95, self.epoch + 1)
             if self.args.wandb:
-                self.wandb_logger.log_metrics("val/COCOAP50", ap50, self.epoch + 1)
-                self.wandb_logger.log_metrics("val/COCOAP50_95", ap50_95, self.epoch + 1)
+                self.wandb_logger.log_metrics("val/COCOAP50", ap50)
+                self.wandb_logger.log_metrics("val/COCOAP50_95", ap50_95)
             logger.info("\n" + summary)
         synchronize()
 
