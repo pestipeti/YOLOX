@@ -184,9 +184,11 @@ class Trainer:
             self.tblogger = SummaryWriter(self.file_name)
             if self.args.wandb:
                 self.wandb_logger = WandBLogger(
+                    project_name=self.exp.project_name,
+                    entity=self.exp.entity,
                     model=self.model,
                     config=self.args,
-                    rank = self.rank
+                    rank=self.rank
                 )
             else:
                 self.wandb_logger = None

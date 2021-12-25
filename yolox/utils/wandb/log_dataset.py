@@ -1,14 +1,14 @@
 import argparse
-from wandb_utils import WandbLogger
+from wandb_utils import WandBLogger
 
 
-def create_dataset_artifact(opt): -> None:
+def create_dataset_artifact(opt) -> None:
     """Initializes the WandbLogger and creates a dataset artifact.
 
     Args:
         opt ([type]): Argparse options.
     """
-    logger = WandbLogger(opt, None)  # TODO: return value unused
+    logger = WandBLogger(opt, None)  # TODO: return value unused
     logger.create_dataset_artifact(opt)
 
 

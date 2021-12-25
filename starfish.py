@@ -1,11 +1,16 @@
 import os
 
 from yolox.exp import Exp as MyExp
+from yolox.utils.setup_env import increment_path
 
 
 class Exp(MyExp):
     def __init__(self):
         super(Exp, self).__init__()
+
+        # ---------------- wandb config ---------------- #
+        self.project_name = "TFStarfish"
+        self.entity = "beluga_and_peter"
 
         # ---------------- model config ---------------- #
         self.num_classes = 1
@@ -19,7 +24,7 @@ class Exp(MyExp):
         self.random_size = (10, 20)
         self.data_dir = None  # You have to add to the end of the train cli
         self.train_ann = "train.json"
-        self.val_ann = "valid.json"
+        self.val_ann = "val.json"
 
         # --------------- transform config ----------------- #
         self.mosaic_prob = 1.0
@@ -47,7 +52,9 @@ class Exp(MyExp):
         self.momentum = 0.9
         self.print_interval = 100
         self.eval_interval = 1
-        self.exp_name = os.path.split(os.path.realpath(__file__))[1].split(".")[0]
+
+        self.exp_name = "sf"
+        self.exp_name = str(increment_path(f"YOLOX_outputs/{self.exp_name}", exist_ok=False)).split("/")[-1]
 
         # -----------------  testing config ------------------ #
         self.test_size = (800, 1280)

@@ -41,6 +41,7 @@ class WandBLogger:
     def __init__(
         self,
         project_name: str = "YOLOX",
+        entity: str = None,
         run_name: str = None,
         save_code: bool = True,
         config: object = None,
@@ -65,6 +66,7 @@ class WandBLogger:
         """
 
         self.project_name = project_name
+        self.entity = entity
         self.run_name = run_name
         self.save_code = save_code
         self.dir = dir
@@ -107,6 +109,7 @@ class WandBLogger:
         """Parses the arguments for wandb.init() function call."""
         self.init_kwargs = {
             "project": self.project_name,
+            "entity": self.entity,
             "name": self.run_name,
             "save_code": self.save_code,
             "dir": self.dir,
