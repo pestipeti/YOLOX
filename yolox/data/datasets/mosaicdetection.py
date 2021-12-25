@@ -44,7 +44,6 @@ class MosaicDetection(Dataset):
         mosaic_prob=1.0, mixup_prob=1.0, *args
     ):
         """
-
         Args:
             dataset(Dataset) : Pytorch dataset object.
             img_size (tuple):

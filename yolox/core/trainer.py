@@ -2,9 +2,6 @@
 # -*- coding:utf-8 -*-
 # Copyright (c) Megvii, Inc. and its affiliates.
 
-import datetime
-import os
-import time
 from loguru import logger
 
 import torch
@@ -28,6 +25,11 @@ from yolox.utils import (
     setup_logger,
     synchronize
 )
+from yolox.utils.wandb import WandBLogger
+
+import datetime
+import os
+import time
 
 
 class Trainer:
@@ -114,6 +116,11 @@ class Trainer:
         for param_group in self.optimizer.param_groups:
             param_group["lr"] = lr
 
+        if self.rank == 0 and self.args.wandb:
+            self.wandb_logger.log_metrics("LR", lr)
+            self.wandb_logger.log_metrics("Train/loss", loss.item())
+            self.wandb_logger.wandb.config.update({"LR": lr}, allow_val_change = True)
+
         iter_end_time = time.time()
         self.meter.update(
             iter_time=iter_end_time - iter_start_time,
@@ -175,13 +182,23 @@ class Trainer:
         # Tensorboard logger
         if self.rank == 0:
             self.tblogger = SummaryWriter(self.file_name)
+            if self.args.wandb:
+                self.wandb_logger = WandBLogger(
+                    model=self.model,
+                    config=self.args,
+                    rank = self.rank
+                )
+            else:
+                self.wandb_logger = None
 
         logger.info("Training start...")
         logger.info("\n{}".format(model))
 
     def after_train(self):
         logger.info(
-            "Training of experiment is done and the best AP is {:.2f}".format(self.best_ap * 100)
+            "Training of experiment is done and the best AP is {:.2f}".format(
+                self.best_ap * 100
+            )
         )
 
     def before_epoch(self):
@@ -229,6 +246,11 @@ class Trainer:
             loss_str = ", ".join(
                 ["{}: {:.1f}".format(k, v.latest) for k, v in loss_meter.items()]
             )
+            if self.rank == 0:
+                for k, v in loss_meter.items():
+                    k = "Train/" + str(k)
+                    if self.args.wandb:
+                        self.wandb_logger.log_metrics(k, v.latest)
 
             time_meter = self.meter.get_filtered_meter("time")
             time_str = ", ".join(
@@ -300,17 +322,22 @@ class Trainer:
                 evalmodel = evalmodel.module
 
         ap50_95, ap50, summary = self.exp.eval(
-            evalmodel, self.evaluator, self.is_distributed
+            evalmodel, self.evaluator, self.is_distributed, wandb_logger=self.wandb_logger
         )
         self.model.train()
         if self.rank == 0:
             self.tblogger.add_scalar("val/COCOAP50", ap50, self.epoch + 1)
             self.tblogger.add_scalar("val/COCOAP50_95", ap50_95, self.epoch + 1)
+            if self.args.wandb:
+                self.wandb_logger.log_metrics("val/COCOAP50", ap50, self.epoch + 1)
+                self.wandb_logger.log_metrics("val/COCOAP50_95", ap50_95, self.epoch + 1)
             logger.info("\n" + summary)
         synchronize()
 
         self.save_ckpt("last_epoch", ap50_95 > self.best_ap)
         self.best_ap = max(self.best_ap, ap50_95)
+        if self.rank == 0 and self.args.wandb:
+            self.wandb_logger.wandb.config.update({"Best_AP": self.best_ap}, allow_val_change = True)
 
     def save_ckpt(self, ckpt_name, update_best_ckpt=False):
         if self.rank == 0:
@@ -327,3 +354,10 @@ class Trainer:
                 self.file_name,
                 ckpt_name,
             )
+
+            if self.args.wandb:
+                self.wandb_logger.wandb.save(os.path.join(self.file_name, ckpt_name+"_ckpt.pth"))
+                if self.wandb_logger:
+                    self.wandb_logger.log_checkpoint(
+                        os.path.join(self.file_name, ckpt_name+"_ckpt.pth"), self.max_epoch, update_best_ckpt
+                    )
