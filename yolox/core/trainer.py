@@ -4,6 +4,7 @@
 import cv2
 import numpy as np
 from loguru import logger
+from pathlib import Path
 
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -104,7 +105,7 @@ class Trainer:
         inps, targets = self.exp.preprocess(inps, targets, self.input_size)
         data_end_time = time.time()
 
-        if self.iter == 0:
+        if self.iter <= 1:
             self.tmp_inputs = inps.detach().cpu().numpy()
 
         with torch.cuda.amp.autocast(enabled=self.amp_training):
@@ -250,6 +251,11 @@ class Trainer:
                 cv2.imwrite(os.path.join(self.file_name, f"train_{self.iter}_{idx}.jpg"), img)
 
             self.tmp_inputs = None
+            if self.wandb_logger and self.iter == 1:
+                files = sorted(Path(self.file_name).glob('train*.jpg'))
+                self.wandb_logger.wandb.log({
+                    'Mosaics': [self.wandb_logger.wandb.Image(str(f), caption=f.name) for f in files if f.exists()]
+                })
 
         # log needed information
         if (self.iter + 1) % self.exp.print_interval == 0:
