@@ -21,7 +21,7 @@ class Exp(MyExp):
         self.data_num_workers = 8
         self.input_size = (800, 1280)
         self.multiscale_range = 10
-        self.random_size = (10, 20)
+        self.random_size = (20, 35)
         self.data_dir = None  # You have to add to the end of the train cli
         self.train_ann = "train.json"
         self.val_ann = "val.json"
