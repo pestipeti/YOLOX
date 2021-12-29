@@ -50,7 +50,7 @@ class Exp(MyExp):
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
-        self.print_interval = 100
+        self.print_interval = 10
         self.eval_interval = 1
 
         self.exp_name = "sf"
