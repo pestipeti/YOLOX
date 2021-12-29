@@ -20,15 +20,15 @@ class Exp(MyExp):
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
         self.input_size = (800, 1280)
-        self.multiscale_range = 3
-        # self.random_size = (20, 35)
+        self.multiscale_range = 10
+        self.random_size = (20, 35)
         self.data_dir = None  # You have to add to the end of the train cli
         self.train_ann = "train.json"
         self.val_ann = "val.json"
 
         # --------------- transform config ----------------- #
-        self.mosaic_prob = 0.2
-        self.mixup_prob = 0.0
+        self.mosaic_prob = 1.0
+        self.mixup_prob = 0.1
         self.hsv_prob = 0.7
         self.flip_prob = 0.5
         self.degrees = 5.0
@@ -39,8 +39,8 @@ class Exp(MyExp):
         self.enable_mixup = False
 
         # --------------  training config --------------------- #
-        self.warmup_epochs = 2
-        self.max_epoch = 5
+        self.warmup_epochs = 5
+        self.max_epoch = 25
         self.warmup_lr = 0
         self.basic_lr_per_img = 0.01 / 64.0
         self.scheduler = "yoloxwarmcos"
