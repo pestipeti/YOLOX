@@ -12,8 +12,12 @@ class Exp(MyExp):
 
         # ---------------- model config ---------------- #
         self.num_classes = 1
-        self.depth = 1
-        self.width = 1
+
+        self.depth = 0.67  ## m
+        self.width = 0.75  ## m
+
+        # self.depth = 1  ## l
+        # self.width = 1  ## l
 
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
