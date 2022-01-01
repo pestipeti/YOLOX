@@ -13,11 +13,11 @@ class Exp(MyExp):
         # ---------------- model config ---------------- #
         self.num_classes = 1
 
-        self.depth = 0.67  # m
-        self.width = 0.75  # m
+        # self.depth = 0.67  # m
+        # self.width = 0.75  # m
 
-        # self.depth = 1  ## l
-        # self.width = 1  ## l
+        self.depth = 1  ## l
+        self.width = 1  ## l
 
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
@@ -46,7 +46,7 @@ class Exp(MyExp):
         self.warmup_lr = 0
         self.basic_lr_per_img = 0.01 / 64.0
         self.scheduler = "yoloxwarmcos"
-        self.no_aug_epochs = 25
+        self.no_aug_epochs = 2
         self.min_lr_ratio = 0.05
         self.ema = True
 

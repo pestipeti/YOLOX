@@ -174,8 +174,8 @@ class TrainTransform:
                 A.RandomRain(rain_type='drizzle', p=0.2, drop_color=(50, 130, 160)),
                 A.RandomRain(rain_type='heavy', p=0.5, drop_color=(40, 123, 153)),
                 A.RandomRain(rain_type='torrential', p=0.3, drop_color=(70, 130, 150)),
-            ], p=0.15),
-            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=90, p=0.75),
+            ], p=0.1),
+            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=90, p=0.9),
             A.RandomBrightnessContrast(p=0.75),
             A.OneOf([
                 A.Blur(p=0.5),
