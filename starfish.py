@@ -13,8 +13,8 @@ class Exp(MyExp):
         # ---------------- model config ---------------- #
         self.num_classes = 1
 
-        self.depth = 0.67  ## m
-        self.width = 0.75  ## m
+        self.depth = 0.67  # m
+        self.width = 0.75  # m
 
         # self.depth = 1  ## l
         # self.width = 1  ## l
@@ -32,7 +32,7 @@ class Exp(MyExp):
         self.mosaic_prob = 0.0
         self.mixup_prob = 0.0
         self.hsv_prob = 0.0
-        self.flip_prob = 0.0
+        self.flip_prob = 0.5
         self.degrees = 5.0
         self.translate = 0.1
         self.mosaic_scale = (0.5, 1.5)
@@ -46,7 +46,7 @@ class Exp(MyExp):
         self.warmup_lr = 0
         self.basic_lr_per_img = 0.01 / 64.0
         self.scheduler = "yoloxwarmcos"
-        self.no_aug_epochs = 2
+        self.no_aug_epochs = 20
         self.min_lr_ratio = 0.05
         self.ema = True
 
