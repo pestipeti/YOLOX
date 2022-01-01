@@ -16,6 +16,7 @@ from yolox.utils import xyxy2cxcywh
 
 import math
 import random
+import albumentations as A
 
 
 def augment_hsv(img, hgain=5, sgain=30, vgain=30):
@@ -166,13 +167,38 @@ class TrainTransform:
         self.flip_prob = flip_prob
         self.hsv_prob = hsv_prob
 
+        self.transform = A.Compose([
+            A.Flip(),
+            A.RGBShift(p=0.01),
+            A.OneOf([
+                A.RandomRain(rain_type='drizzle', p=0.2, drop_color=(50, 130, 160)),
+                A.RandomRain(rain_type='heavy', p=0.5, drop_color=(40, 123, 153)),
+                A.RandomRain(rain_type='torrential', p=0.3, drop_color=(70, 130, 150)),
+            ], p=0.15),
+            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=90, p=0.75),
+            A.RandomBrightnessContrast(p=0.75),
+            A.OneOf([
+                A.Blur(p=0.5),
+                # A.MedianBlur(p=0.5),
+                A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.2, p=0.5),
+            ], p=0.05),
+            A.CoarseDropout(min_holes=24, max_holes=32, min_width=8, max_width=32, min_height=8, max_height=32, p=1.0)
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+
     def __call__(self, image, targets, input_dim):
         boxes = targets[:, :4].copy()
         labels = targets[:, 4].copy()
+
+        # Albumentations
+        new = self.transform(image=image, bboxes=boxes, class_labels=labels)  # transformed
+        image_t = new["image"]
+        labels = np.array(new["class_labels"])
+        boxes = np.array([b for b in new["bboxes"]])
+
         if len(boxes) == 0:
             targets = np.zeros((self.max_labels, 5), dtype=np.float32)
-            image, r_o = preproc(image, input_dim)
-            return image, targets
+            image_t, r_o = preproc(image_t, input_dim)
+            return image_t, targets
 
         image_o = image.copy()
         targets_o = targets.copy()
@@ -182,9 +208,9 @@ class TrainTransform:
         # bbox_o: [xyxy] to [c_x,c_y,w,h]
         boxes_o = xyxy2cxcywh(boxes_o)
 
-        if random.random() < self.hsv_prob:
-            augment_hsv(image)
-        image_t, boxes = _mirror(image, boxes, self.flip_prob)
+        # if random.random() < self.hsv_prob:
+        #     augment_hsv(image)
+        image_t, boxes = _mirror(image_t, boxes, self.flip_prob)
         height, width, _ = image_t.shape
         image_t, r_ = preproc(image_t, input_dim)
         # boxes [xyxy] 2 [cx,cy,w,h]

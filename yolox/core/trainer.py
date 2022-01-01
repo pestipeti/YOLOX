@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from loguru import logger
 from pathlib import Path
-
+from PIL import Image, ImageDraw
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
@@ -59,6 +59,7 @@ class Trainer:
         self.input_size = exp.input_size
         self.best_ap = 0
         self.tmp_inputs = None
+        self.tmp_targets = None
 
         # metric record
         self.meter = MeterBuffer(window_size=exp.print_interval)
@@ -105,8 +106,9 @@ class Trainer:
         inps, targets = self.exp.preprocess(inps, targets, self.input_size)
         data_end_time = time.time()
 
-        if self.iter <= 1:
+        if self.iter <= 5:
             self.tmp_inputs = inps.detach().cpu().numpy()
+            self.tmp_targets = targets.detach().cpu().numpy()
 
         with torch.cuda.amp.autocast(enabled=self.amp_training):
             outputs = self.model(inps, targets)
@@ -243,12 +245,27 @@ class Trainer:
             * log information
             * reset setting of resize
         """
-        if self.iter <= 1:
+        if self.iter <= 5:
             # log input images
             for idx, img in enumerate(self.tmp_inputs):
                 img = img.transpose(1, 2, 0)
                 img = img.astype(np.uint8)
-                cv2.imwrite(os.path.join(self.file_name, f"train_{self.iter}_{idx}.jpg"), img)
+
+                img = Image.fromarray(img)
+                draw = ImageDraw.Draw(img)
+
+                for box in self.tmp_targets[idx]:
+                    draw.rectangle(
+                        (int(box[1] - box[3] / 2),
+                         int(box[2] - box[4] / 2),
+                         int(box[1] + box[3] / 2),
+                         int(box[2] + box[4] / 2)),
+                        outline="red",
+                        width=3
+                    )
+
+                # img.save(os.path.join(self.file_name, f"train_{self.iter}_{idx}.jpg"))
+                cv2.imwrite(os.path.join(self.file_name, f"train_{self.iter}_{idx}.jpg"), np.array(img))
 
             self.tmp_inputs = None
             if self.wandb_logger and self.iter == 1:
