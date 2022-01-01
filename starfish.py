@@ -22,7 +22,7 @@ class Exp(MyExp):
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
         self.input_size = (800, 1280)
-        self.multiscale_range = 0
+        self.multiscale_range = 3
         # self.random_size = (20, 35)
         self.data_dir = None  # You have to add to the end of the train cli
         self.train_ann = "train.json"
@@ -31,7 +31,7 @@ class Exp(MyExp):
         # --------------- transform config ----------------- #
         self.mosaic_prob = 0.0
         self.mixup_prob = 0.0
-        self.hsv_prob = 0.0
+        self.hsv_prob = 0.75
         self.flip_prob = 0.5
         self.degrees = 5.0
         self.translate = 0.1
