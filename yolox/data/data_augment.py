@@ -175,7 +175,7 @@ class TrainTransform:
                 A.RandomRain(rain_type='heavy', p=0.5, drop_color=(40, 123, 153)),
                 A.RandomRain(rain_type='torrential', p=0.3, drop_color=(70, 130, 150)),
             ], p=0.1),
-            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=90, p=0.9),
+            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=45, p=0.8, border_mode=cv2.BORDER_CONSTANT),
             A.RandomBrightnessContrast(p=0.75),
             A.OneOf([
                 A.Blur(p=0.5),
