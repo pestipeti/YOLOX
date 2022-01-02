@@ -169,19 +169,24 @@ class TrainTransform:
 
         self.transform = A.Compose([
             A.Flip(),
-            A.RGBShift(p=0.01),
+            A.OneOf([
+                A.RGBShift(p=0.03),
+                A.ToGray(p=0.04),
+                A.CLAHE(p=0.03),
+            ], p=0.05),
+            A.RandomBrightnessContrast(p=0.75),
+            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=45, p=0.9, border_mode=cv2.BORDER_CONSTANT),
             A.OneOf([
                 A.RandomRain(rain_type='drizzle', p=0.2, drop_color=(50, 130, 160)),
                 A.RandomRain(rain_type='heavy', p=0.5, drop_color=(40, 123, 153)),
                 A.RandomRain(rain_type='torrential', p=0.3, drop_color=(70, 130, 150)),
-            ], p=0.1),
-            A.ShiftScaleRotate(scale_limit=0.15, rotate_limit=45, p=0.8, border_mode=cv2.BORDER_CONSTANT),
-            A.RandomBrightnessContrast(p=0.75),
+            ], p=0.05),
             A.OneOf([
                 A.Blur(p=0.5),
-                # A.MedianBlur(p=0.5),
                 A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.2, p=0.5),
             ], p=0.05),
+            A.RandomSunFlare(src_radius=150, src_color=(60, 60, 60), p=0.05),
+            A.GaussNoise(p=0.2),
             A.CoarseDropout(min_holes=24, max_holes=32, min_width=8, max_width=32, min_height=8, max_height=32, p=1.0)
         ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
