@@ -363,16 +363,18 @@ class Trainer:
             if is_parallel(evalmodel):
                 evalmodel = evalmodel.module
 
-        ap50_95, ap50, summary = self.exp.eval(
+        ap50_95, ap50, ar100, summary = self.exp.eval(
             evalmodel, self.evaluator, self.is_distributed, wandb_logger=self.wandb_logger
         )
         self.model.train()
         if self.rank == 0:
             self.tblogger.add_scalar("val/COCOAP50", ap50, self.epoch + 1)
             self.tblogger.add_scalar("val/COCOAP50_95", ap50_95, self.epoch + 1)
+            self.tblogger.add_scalar("val/COCOAR50_95--100", ar100, self.epoch + 1)
             if self.args.wandb:
                 self.wandb_logger.log_metrics("val/COCOAP50", ap50)
                 self.wandb_logger.log_metrics("val/COCOAP50_95", ap50_95)
+                self.wandb_logger.log_metrics("val/COCOAR50_95--100", ar100)
             logger.info("\n" + summary)
         synchronize()
 

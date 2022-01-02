@@ -262,6 +262,6 @@ class COCOEvaluator:
             info += redirect_string.getvalue()
             if self.per_class_mAP:
                 info += "per class mAP:\n" + per_class_mAP_table(cocoEval)
-            return cocoEval.stats[0], cocoEval.stats[1], info
+            return cocoEval.stats[0], cocoEval.stats[1], cocoEval.stats[7], info
         else:
-            return 0, 0, info
+            return 0, 0, 0, info
