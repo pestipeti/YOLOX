@@ -58,6 +58,8 @@ class Exp(BaseExp):
         self.min_lr_ratio = 0.05
         self.ema = True
 
+        self.albu = None
+
         self.weight_decay = 5e-4
         self.momentum = 0.9
         self.print_interval = 10
@@ -120,7 +122,7 @@ class Exp(BaseExp):
             mosaic=not no_aug,
             img_size=self.input_size,
             preproc=TrainTransform(
-                max_labels=120, flip_prob=self.flip_prob, hsv_prob=self.hsv_prob
+                max_labels=120, flip_prob=self.flip_prob, hsv_prob=self.hsv_prob, albu=self.albu
             ),
             degrees=self.degrees,
             translate=self.translate,

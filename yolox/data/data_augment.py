@@ -162,12 +162,13 @@ def preproc(img, input_size, swap=(2, 0, 1)):
 
 
 class TrainTransform:
-    def __init__(self, max_labels=50, flip_prob=0.5, hsv_prob=1.0):
+    def __init__(self, max_labels=50, flip_prob=0.5, hsv_prob=1.0, albu=None):
         self.max_labels = max_labels
         self.flip_prob = flip_prob
         self.hsv_prob = hsv_prob
+        self.albu = albu.lower() if albu else None
 
-        self.transform = A.Compose([
+        self.transformHigh = A.Compose([
             A.Flip(),
             A.OneOf([
                 A.RGBShift(p=0.03),
@@ -190,12 +191,31 @@ class TrainTransform:
             A.CoarseDropout(min_holes=24, max_holes=32, min_width=8, max_width=32, min_height=8, max_height=32, p=1.0)
         ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
+        # Low augmentation
+        self.transformLow = A.Compose([
+            A.HorizontalFlip(),
+            A.RandomBrightnessContrast(p=0.2),
+            A.GaussNoise(p=0.1),
+            A.ShiftScaleRotate(shift_limit=0.02, scale_limit=0.1, rotate_limit=10, p=0.5),
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+
+        self.transformNone = A.Compose([
+            A.NoOp(p=1.0)
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+
     def __call__(self, image, targets, input_dim):
         boxes = targets[:, :4].copy()
         labels = targets[:, 4].copy()
 
+        if self.albu == 'low':
+            transform = self.transformLow
+        elif self.albu == 'high':
+            transform = self.transformHigh
+        else:
+            transform = self.transformNone
+
         # Albumentations
-        new = self.transform(image=image, bboxes=boxes, class_labels=labels)  # transformed
+        new = transform(image=image, bboxes=boxes, class_labels=labels)  # transformed
         image_t = new["image"]
         labels = np.array(new["class_labels"])
         boxes = np.array([b for b in new["bboxes"]])

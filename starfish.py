@@ -53,6 +53,9 @@ class Exp(MyExp):
         self.min_lr_ratio = 0.05
         self.ema = True
 
+        # None | low | high
+        self.albu = 'low'
+
         self.weight_decay = 5e-4
         self.momentum = 0.9
         self.print_interval = 50
@@ -63,5 +66,5 @@ class Exp(MyExp):
 
         # -----------------  testing config ------------------ #
         self.test_size = (800, 1280)
-        self.test_conf = 0.1
-        self.nmsthre = 0.6
+        self.test_conf = 0.4
+        self.nmsthre = 0.45
