@@ -16,11 +16,11 @@ class Exp(MyExp):
         # self.depth = 0.67  # m
         # self.width = 0.75  # m
 
-        # self.depth = 1  # l
-        # self.width = 1  # l
+        self.depth = 1  # l
+        self.width = 1  # l
 
-        self.depth = 1.33
-        self.width = 1.25
+        # self.depth = 1.33
+        # self.width = 1.25
 
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
@@ -40,21 +40,21 @@ class Exp(MyExp):
         self.translate = 0.0
         self.mosaic_scale = (0.5, 1.5)
         self.mixup_scale = (0.5, 1.5)
-        self.shear = 2.0
+        self.shear = 0.0
         self.enable_mixup = False
 
         # --------------  training config --------------------- #
-        self.warmup_epochs = 3
-        self.max_epoch = 25
+        self.warmup_epochs = 1
+        self.max_epoch = 5
         self.warmup_lr = 0
         self.basic_lr_per_img = 0.01 / 64.0
         self.scheduler = "yoloxwarmcos"
-        self.no_aug_epochs = 2
+        self.no_aug_epochs = 1
         self.min_lr_ratio = 0.05
         self.ema = True
 
         # None | low | high
-        self.albu = 'low'
+        self.albu = None
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
@@ -66,5 +66,5 @@ class Exp(MyExp):
 
         # -----------------  testing config ------------------ #
         self.test_size = (800, 1280)
-        self.test_conf = 0.4
-        self.nmsthre = 0.45
+        self.test_conf = 0.2
+        self.nmsthre = 0.5
