@@ -191,6 +191,14 @@ class TrainTransform:
             A.CoarseDropout(min_holes=24, max_holes=32, min_width=8, max_width=32, min_height=8, max_height=32, p=1.0)
         ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
+        self.transformMed = A.Compose([
+            A.HorizontalFlip(),
+            A.RandomBrightnessContrast(p=0.5),
+            A.ShiftScaleRotate(scale_limit=0.1, rotate_limit=0.25, p=0.7, border_mode=cv2.BORDER_CONSTANT),
+            A.GaussNoise(p=0.5),
+            A.CoarseDropout(min_holes=24, max_holes=32, min_width=8, max_width=32, min_height=8, max_height=32, p=1.0)
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+
         # Low augmentation
         self.transformLow = A.Compose([
             A.HorizontalFlip(),
@@ -211,6 +219,8 @@ class TrainTransform:
             transform = self.transformLow
         elif self.albu == 'high':
             transform = self.transformHigh
+        elif self.albu == 'med':
+            transform = self.transformMed
         else:
             transform = self.transformNone
 
