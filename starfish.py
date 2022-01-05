@@ -19,12 +19,12 @@ class Exp(MyExp):
         self.depth = 1  # l
         self.width = 1  # l
 
-        # self.depth = 1.33
-        # self.width = 1.25
+        # self.depth = 1.33  # x
+        # self.width = 1.25  # x
 
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
-        self.input_size = (800, 1280)
+        self.input_size = (736, 1280)
         self.multiscale_range = 3
         # self.random_size = (20, 35)
         self.data_dir = None  # You have to add to the end of the train cli
@@ -54,7 +54,7 @@ class Exp(MyExp):
         self.ema = True
 
         # None | low | high
-        self.albu = "high"
+        self.albu = "med"
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
@@ -65,6 +65,6 @@ class Exp(MyExp):
         self.exp_name = str(increment_path(f"YOLOX_outputs/{self.exp_name}", exist_ok=False)).split("/")[-1]
 
         # -----------------  testing config ------------------ #
-        self.test_size = (800, 1280)
-        self.test_conf = 0.4
-        self.nmsthre = 0.45
+        self.test_size = (736, 1280)
+        self.test_conf = 0.1
+        self.nmsthre = 0.5
