@@ -54,7 +54,7 @@ class Exp(MyExp):
         self.ema = True
 
         # None | low | high
-        self.albu = "med"
+        self.albu = "high"
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
