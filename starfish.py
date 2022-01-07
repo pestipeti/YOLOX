@@ -45,16 +45,16 @@ class Exp(MyExp):
 
         # --------------  training config --------------------- #
         self.warmup_epochs = 3
-        self.max_epoch = 20
+        self.max_epoch = 32
         self.warmup_lr = 0
         self.basic_lr_per_img = 0.01 / 64.0
         self.scheduler = "yoloxwarmcos"
-        self.no_aug_epochs = 1
+        self.no_aug_epochs = 2
         self.min_lr_ratio = 0.05
         self.ema = True
 
         # None | low | high
-        self.albu = "high"
+        self.albu = "med"
 
         self.weight_decay = 5e-4
         self.momentum = 0.9
