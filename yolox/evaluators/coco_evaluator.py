@@ -230,7 +230,7 @@ class COCOEvaluator:
             f2stats.append(
                 5 * num_tp[idx] / (5 * num_tp[idx] + 4 * num_fn[idx] + num_fp[idx])
             )
-
+        f2stats = np.array(f2stats).mean()
         statistics = torch.cuda.FloatTensor([inference_time, nms_time, n_samples])
         if distributed:
             data_list = gather(data_list, dst=0)
