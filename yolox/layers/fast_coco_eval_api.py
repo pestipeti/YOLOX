@@ -34,6 +34,8 @@ class COCOeval_opt(COCOeval):
 
         print("Running per image evaluation...")
         p = self.params
+        p.iouThrs = np.linspace(.3, 0.8, int(np.round((0.8 - .3) / .05)) + 1, endpoint=True)
+
         # add backward compatibility if useSegm is specified in params
         if p.useSegm is not None:
             p.iouType = "segm" if p.useSegm == 1 else "bbox"

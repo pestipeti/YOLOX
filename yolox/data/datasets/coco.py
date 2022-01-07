@@ -53,6 +53,8 @@ class COCODataset(Dataset):
         self.img_size = img_size
         self.preproc = preproc
         self.annotations = self._load_coco_annotations()
+        self.max_labels = 50
+
         if cache:
             self._cache_images()
 
@@ -213,4 +215,9 @@ class COCODataset(Dataset):
 
         if self.preproc is not None:
             img, target = self.preproc(img, target, self.input_dim)
-        return img, target, img_info, img_id
+
+        padded_labels = np.zeros((self.max_labels, 5))
+        padded_labels[range(len(target))[: self.max_labels]] = target[: self.max_labels]
+        padded_labels = np.ascontiguousarray(padded_labels, dtype=np.float32)
+
+        return img, padded_labels, img_info, img_id

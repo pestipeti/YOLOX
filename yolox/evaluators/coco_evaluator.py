@@ -52,6 +52,31 @@ def per_class_mAP_table(coco_eval, class_names=COCO_CLASSES, headers=["class", "
     return table
 
 
+def box_iou(box1, box2):
+    # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+    """
+    Return intersection-over-union (Jaccard index) of boxes.
+    Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+    Arguments:
+        box1 (Tensor[N, 4])
+        box2 (Tensor[M, 4])
+    Returns:
+        iou (Tensor[N, M]): the NxM matrix containing the pairwise
+            IoU values for every element in boxes1 and boxes2
+    """
+
+    def box_area(box):
+        # box = 4xn
+        return (box[2] - box[0]) * (box[3] - box[1])
+
+    area1 = box_area(box1.T)
+    area2 = box_area(box2.T)
+
+    # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
+
+
 class COCOEvaluator:
     """
     COCO AP Evaluation class.  All the data in the val2017 dataset are processed
@@ -133,7 +158,13 @@ class COCOEvaluator:
             model(x)
             model = model_trt
 
-        for cur_iter, (imgs, _, info_imgs, ids) in enumerate(
+        num_tp = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        num_fp = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        num_fn = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        f2stats = []
+
+        for cur_iter, (imgs, targets, info_imgs, ids) in enumerate(
             progress_bar(self.dataloader)
         ):
             with torch.no_grad():
@@ -159,12 +190,46 @@ class COCOEvaluator:
                     nms_end = time_synchronized()
                     nms_time += nms_end - infer_end
 
+                # Competition metric
+                for si, preds in enumerate(outputs):
+                    labels = targets[si, targets[si].sum(dim=1) > 0]
+                    nl = labels.shape[0]
+                    pl = 0 if preds is None else len(preds)
+
+                    if pl == 0:
+                        # No predicted boxes
+                        if nl > 0:
+                            num_fn = num_fn + nl
+
+                    else:
+                        if nl > 0:
+                            preds, gts = preds[:, :4].cpu().detach(), labels[:, :4].cpu().detach()
+
+                            iou_matrix = box_iou(preds, gts)
+
+                            for idx, iou_th in enumerate(np.arange(0.3, 0.85, 0.05)):
+                                tp = len(torch.where(iou_matrix.max(0)[0] >= iou_th)[0])
+                                fp = len(preds) - tp
+                                fn = len(torch.where(iou_matrix.max(0)[0] < iou_th)[0])
+                                num_tp[idx] += tp
+                                num_fp[idx] += fp
+                                num_fn[idx] += fn
+                        else:
+                            # All predicted box are false positives.
+                            num_fp = num_fp + len(pl)
+
             coco_item = self.convert_to_coco_format(outputs, info_imgs, ids)
 
             if wandb_logger and cur_iter == 0:
                 wandb_logger.log_preds(imgs, outputs)
 
             data_list.extend(coco_item)
+
+        # Calculate f2
+        for idx, iou_th in enumerate(np.arange(0.3, 0.85, 0.05)):
+            f2stats.append(
+                5 * num_tp[idx] / (5 * num_tp[idx] + 4 * num_fn[idx] + num_fp[idx])
+            )
 
         statistics = torch.cuda.FloatTensor([inference_time, nms_time, n_samples])
         if distributed:
@@ -174,7 +239,7 @@ class COCOEvaluator:
 
         eval_results = self.evaluate_prediction(data_list, statistics)
         synchronize()
-        return eval_results
+        return eval_results + (f2stats, num_tp[0], num_fp[0], num_fn[0])
 
     def convert_to_coco_format(self, outputs, info_imgs, ids):
         data_list = []

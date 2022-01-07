@@ -363,7 +363,7 @@ class Trainer:
             if is_parallel(evalmodel):
                 evalmodel = evalmodel.module
 
-        ap50_95, ap50, ar100, summary = self.exp.eval(
+        ap50_95, ap50, ar100, summary, f2, tp, fp, fn = self.exp.eval(
             evalmodel, self.evaluator, self.is_distributed, wandb_logger=self.wandb_logger
         )
         self.model.train()
@@ -372,16 +372,20 @@ class Trainer:
             self.tblogger.add_scalar("val/COCOAP50_95", ap50_95, self.epoch + 1)
             self.tblogger.add_scalar("val/COCOAR50_95--100", ar100, self.epoch + 1)
             if self.args.wandb:
-                self.wandb_logger.log_metrics("val/COCOAP50", ap50)
-                self.wandb_logger.log_metrics("val/COCOAP50_95", ap50_95)
-                self.wandb_logger.log_metrics("val/COCOAR50_95--100", ar100)
+                self.wandb_logger.log_metrics("metric/mAP_0.3", ap50)
+                self.wandb_logger.log_metrics("metric/mAP_0.3:0.8", ap50_95)
+                self.wandb_logger.log_metrics("metric/precision", ar100)
+                self.wandb_logger.log_metrics("metric/mF2_0.3:0.8", f2)
+                self.wandb_logger.log_metrics("metric/tp@0.3", tp)
+                self.wandb_logger.log_metrics("metric/fp@0.3", fp)
+                self.wandb_logger.log_metrics("metric/fn@0.3", fn)
             logger.info("\n" + summary)
         synchronize()
 
-        self.save_ckpt("last_epoch", ap50_95 > self.best_ap)
-        self.best_ap = max(self.best_ap, ap50_95)
+        self.save_ckpt("last_epoch", f2 > self.best_ap)
+        self.best_ap = max(self.best_ap, f2)
         if self.rank == 0 and self.args.wandb:
-            self.wandb_logger.wandb.config.update({"Best_AP": self.best_ap}, allow_val_change=True)
+            self.wandb_logger.wandb.config.update({"Best_F2": self.best_ap}, allow_val_change=True)
 
     def save_ckpt(self, ckpt_name, update_best_ckpt=False):
         if self.rank == 0:
