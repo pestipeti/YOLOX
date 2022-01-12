@@ -216,7 +216,7 @@ class COCOEvaluator:
                                 num_fn[idx] += fn
                         else:
                             # All predicted box are false positives.
-                            num_fp = num_fp + len(pl)
+                            num_fp = num_fp + pl
 
             coco_item = self.convert_to_coco_format(outputs, info_imgs, ids)
 
