@@ -435,20 +435,20 @@ class TrainTransform:
         ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
         self.transformMed = A.Compose([
-            A.Flip(),
+            A.HorizontalFlip(),
 
+            A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=15, val_shift_limit=35, p=0.7),
             RandomRain(rain_type='fish', brightness_coefficient=1.0, blur_value=1, drop_color=(190, 120, 60), p=0.25),
 
             A.OneOf([
-                A.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=50),
                 A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 2.0)),
                 A.RandomFog(fog_coef_lower=0.01, fog_coef_upper=0.1),
-            ], p=0.7),
+            ], p=0.5),
 
             A.OneOf([
                 A.Perspective(),
-                A.ShiftScaleRotate(scale_limit=(-0.6, 0), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
-                A.ShiftScaleRotate(scale_limit=(0, 0.6), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
+                A.ShiftScaleRotate(scale_limit=(-0.75, 0), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
+                A.ShiftScaleRotate(scale_limit=(-0.1, 0.4), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
                 A.ShiftScaleRotate(rotate_limit=30, shift_limit=0, scale_limit=0, border_mode=cv2.BORDER_CONSTANT),
             ], p=0.7),
 

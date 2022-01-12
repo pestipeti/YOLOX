@@ -25,7 +25,7 @@ class Exp(MyExp):
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
         self.input_size = (736, 1280)
-        self.multiscale_range = 3
+        self.multiscale_range = 0
         # self.random_size = (20, 35)
         self.data_dir = None  # You have to add to the end of the train cli
         self.train_ann = "train.json"
@@ -45,9 +45,9 @@ class Exp(MyExp):
 
         # --------------  training config --------------------- #
         self.warmup_epochs = 3
-        self.max_epoch = 32
+        self.max_epoch = 25
         self.warmup_lr = 0
-        self.basic_lr_per_img = 0.01 / 64.0
+        self.basic_lr_per_img = 0.01 / 16.0
         self.scheduler = "yoloxwarmcos"
         self.no_aug_epochs = 2
         self.min_lr_ratio = 0.05
@@ -67,4 +67,4 @@ class Exp(MyExp):
         # -----------------  testing config ------------------ #
         self.test_size = (736, 1280)
         self.test_conf = 0.1
-        self.nmsthre = 0.5
+        self.nmsthre = 0.4
