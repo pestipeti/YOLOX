@@ -28,7 +28,7 @@ class Exp(MyExp):
 
         # ---------------- dataloader config ---------------- #
         self.data_num_workers = 8
-        self.input_size = (736, 1280)
+        self.input_size = (1120, 1952)
         self.multiscale_range = 0
         # self.random_size = (20, 35)
         self.data_dir = None  # You have to add to the end of the train cli
@@ -69,7 +69,7 @@ class Exp(MyExp):
         self.exp_name = str(increment_path(f"YOLOX_outputs/{self.exp_name}", exist_ok=False)).split("/")[-1]
 
         # -----------------  testing config ------------------ #
-        self.test_size = (736, 1280)
+        self.test_size = (1120, 1952)
         self.test_conf = 0.1
         self.nmsthre = 0.4
 
