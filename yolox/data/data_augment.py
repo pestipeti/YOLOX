@@ -368,7 +368,7 @@ class RandomRain(ImageOnlyTransform):
 
             self.drop_color = color
 
-            if np.random.rand() < 0.2:
+            if np.random.rand() < 0.1:
                 self.drop_width = 2
 
         elif self.rain_type == "drizzle":
@@ -447,9 +447,9 @@ class TrainTransform:
 
             A.OneOf([
                 A.Perspective(),
-                A.ShiftScaleRotate(scale_limit=(-0.75, 0), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
-                A.ShiftScaleRotate(scale_limit=(-0.1, 0.4), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
-                A.ShiftScaleRotate(rotate_limit=30, shift_limit=0, scale_limit=0, border_mode=cv2.BORDER_CONSTANT),
+                A.ShiftScaleRotate(scale_limit=(-0.4, 0), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
+                A.ShiftScaleRotate(scale_limit=(0, 0.2), shift_limit=0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT),
+                A.ShiftScaleRotate(rotate_limit=20, shift_limit=0, scale_limit=0, border_mode=cv2.BORDER_CONSTANT),
             ], p=0.7),
 
             A.GaussNoise(p=0.7),
